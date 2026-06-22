@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDG Alliances — Spain FY2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#f8f7f5;--surface:#fff;--surface2:#f2f0ec;--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#0C447C;
+  --teal:#0F6E56;--teal-l:#E1F5EE;--teal-t:#085041;
+  --amber:#854F0B;--amber-l:#FAEEDA;--amber-t:#633806;
+  --coral:#993C1D;--coral-l:#FAECE7;--coral-t:#711B13;
+  --green:#3B6D11;--green-l:#EAF3DE;--green-t:#27500A;
+  --purple:#534AB7;--purple-l:#EEEDFE;--purple-t:#3C3489;
+  --r:12px;--rs:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--surface:#252522;--surface2:#2e2e2b;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+    --text:#f0eeea;--text2:#b4b2a9;--text3:#888780;
+    --blue-l:#0c447c;--blue-t:#b5d4f4;--teal-l:#085041;--teal-t:#9fe1cb;
+    --amber-l:#633806;--amber-t:#fac775;--coral-l:#71231d;--coral-t:#f5c4b3;
+    --green-l:#27500a;--green-t:#c0dd97;--purple-l:#3c3489;--purple-t:#cecbf6;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+.shell{max-width:1120px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+/* NAV TABS */
+.nav{display:flex;gap:2px;border-bottom:1.5px solid var(--border2);margin-bottom:2rem}
+.tab{padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.page{display:none}.page.active{display:block}
+
+/* HEADER */
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.75rem}
+.header h1{font-size:22px;font-weight:600;letter-spacing:-.3px}
+.header p{font-size:13px;color:var(--text2);margin-top:3px}
+.badge{font-size:12px;font-weight:500;padding:4px 12px;background:var(--blue-l);color:var(--blue-t);border-radius:20px}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.5rem}
+.metric{background:var(--surface);border-radius:var(--rs);border:0.5px solid var(--border);padding:1rem 1.25rem}
+.metric-label{font-size:12px;color:var(--text2);margin-bottom:6px}
+.metric-value{font-size:26px;font-weight:600;letter-spacing:-.5px}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.metric.ab{border-left:3px solid var(--blue)}
+.metric.at{border-left:3px solid var(--teal)}
+.metric.aa{border-left:3px solid var(--amber)}
+.metric.ag{border-left:3px solid var(--green)}
+
+/* SECTION TITLE */
+.sec{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin:2rem 0 1rem}
+
+/* CHART CARDS */
+.charts2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+@media(max-width:680px){.charts2{grid-template-columns:1fr}}
+.cc{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:1.25rem}
+.cc-title{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:1rem}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:12px;color:var(--text2)}
+.legend span{display:flex;align-items:center;gap:5px}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pill.win{background:var(--green-l);color:var(--green-t)}
+.pill.prog{background:var(--blue-l);color:var(--blue-t)}
+.pill.lost{background:var(--coral-l);color:var(--coral-t)}
+.pill.neg{background:var(--amber-l);color:var(--amber-t)}
+.pill.cobrado{background:var(--green-l);color:var(--green-t)}
+.pill.nominado{background:var(--blue-l);color:var(--blue-t)}
+.pill.aceptado{background:var(--teal-l);color:var(--teal-t)}
+.pill.cancelado{background:var(--coral-l);color:var(--coral-t)}
+.pill.evidencias{background:var(--amber-l);color:var(--amber-t)}
+
+/* PARTNER TAG */
+.ptag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:var(--surface2);border:.5px solid var(--border);color:var(--text2)}
+
+/* TABLE */
+.tcard{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.5rem}
+.thead-bar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:.5px solid var(--border);gap:12px;flex-wrap:wrap}
+.thead-title{font-size:14px;font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 14px;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);background:var(--surface2);border-bottom:.5px solid var(--border);white-space:nowrap}
+td{padding:9px 14px;border-bottom:.5px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.wrap-scroll{overflow-x:auto;max-height:440px;overflow-y:auto}
+
+/* FILTERS */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],select{font-size:13px;padding:7px 11px;border:.5px solid var(--border2);border-radius:var(--rs);background:var(--surface);color:var(--text);outline:none}
+input[type=text]:focus,select:focus{border-color:var(--blue)}
+input[type=text]{width:220px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:7px 14px;border-radius:var(--rs);cursor:pointer;border:.5px solid var(--border2);background:var(--surface);color:var(--text);transition:background .12s}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.primary:hover{background:var(--blue-t)}
+.btn.danger{background:var(--coral-l);color:var(--coral-t);border-color:var(--coral-l)}
+.btn.danger:hover{background:#f5c4b3}
+.btn.sm{font-size:12px;padding:5px 10px}
+.rc{font-size:12px;color:var(--text3)}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r);border:.5px solid var(--border2);padding:1.75rem;width:min(620px,96vw);max-height:90vh;overflow-y:auto;position:relative}
+.modal h2{font-size:18px;font-weight:500;margin-bottom:1.5rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);line-height:1}
+.modal-close:hover{color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:500;color:var(--text2)}
+.form-group input,.form-group select,.form-group textarea{font-size:13px;padding:8px 11px;border:.5px solid var(--border2);border-radius:var(--rs);background:var(--surface2);color:var(--text);outline:none;width:100%}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--blue);background:var(--surface)}
+.form-group textarea{resize:vertical;min-height:60px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:1.75rem;padding-top:1.25rem;border-top:.5px solid var(--border)}
+
+/* PIPE FUND CARDS */
+.pfgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px}
+.pfcard{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);padding:1rem 1.25rem;position:relative}
+.pf-client{font-size:14px;font-weight:500;margin-bottom:3px}
+.pf-proj{font-size:12px;color:var(--text2);margin-bottom:8px}
+.pbar{height:4px;background:var(--surface2);border-radius:2px;margin-top:8px}
+.pfill{height:4px;border-radius:2px;background:var(--teal)}
+.pf-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.pf-amt{font-size:15px;font-weight:600}
+.pf-sub{font-size:11px;color:var(--text3)}
+.edit-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:3px 6px;border-radius:4px}
+.edit-btn:hover{background:var(--surface2);color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--bg);font-size:13px;padding:10px 18px;border-radius:var(--rs);z-index:200;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="header">
+  <div>
+    <h1>SDG Alliances — Spain</h1>
+    <p>Alliances Overview Report · Co-sell &amp; Partner Funding</p>
+  </div>
+  <span class="badge">FY 2026</span>
+</div>
+
+<!-- TABS -->
+<nav class="nav">
+  <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+  <button class="tab" onclick="showTab('pipeline')">🔵 Pipeline co-sell</button>
+  <button class="tab" onclick="showTab('funding')">💰 Funding PS</button>
+  <button class="tab" onclick="showTab('pipefunds')">🔮 Pipe Funds</button>
+</nav>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="page-dashboard" class="page active">
+  <div class="metrics" id="kpis"></div>
+  <div class="sec">Distribución de pipeline</div>
+  <div class="charts2">
+    <div class="cc">
+      <div class="cc-title">Estado de oportunidades</div>
+      <div class="legend" id="leg-state"></div>
+      <div style="position:relative;height:200px"><canvas id="stateChart" role="img" aria-label="Oportunidades por estado"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cc-title">Oportunidades por partner</div>
+      <div class="legend" id="leg-partner"></div>
+      <div style="position:relative;height:200px"><canvas id="partnerChart" role="img" aria-label="Oportunidades por partner"></canvas></div>
+    </div>
+  </div>
+  <div class="cc" style="margin-bottom:1.5rem">
+    <div class="cc-title">Oportunidades por industria</div>
+    <div style="position:relative;height:220px"><canvas id="industryChart" role="img" aria-label="Por industria"></canvas></div>
+  </div>
+  <div class="sec">Funding Professional Services</div>
+  <div class="charts2">
+    <div class="cc">
+      <div class="cc-title">Estado de reclamaciones</div>
+      <div class="legend" id="leg-fstate"></div>
+      <div style="position:relative;height:200px"><canvas id="fundStateChart" role="img" aria-label="Estado funding"></canvas></div>
+    </div>
+    <div class="cc">
+      <div class="cc-title">Funding por industria (USD)</div>
+      <div style="position:relative;height:220px"><canvas id="fundIndChart" role="img" aria-label="Funding por industria"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PIPELINE ===== -->
+<div id="page-pipeline" class="page">
+  <div class="tcard">
+    <div class="thead-bar">
+      <span class="thead-title">Co-sell Opportunities</span>
+      <div class="filters">
+        <input type="text" id="pSearch" placeholder="Buscar cliente, proyecto…" oninput="renderPipe()">
+        <select id="pState" onchange="renderPipe()">
+          <option value="">Todos los estados</option>
+          <option>WIN</option><option>In Progress</option><option>LOST</option><option>Negotiate</option>
+        </select>
+        <select id="pPartner" onchange="renderPipe()">
+          <option value="">Todos los partners</option>
+          <option>Microsoft</option><option>Databricks</option><option>Google Cloud Platform</option>
+          <option>AWS</option><option>SAP</option><option>dbt</option><option>Snowflake</option>
+        </select>
+        <span class="rc" id="pCount"></span>
+      </div>
+      <button class="btn primary" onclick="openPipeModal()">+ Nueva oportunidad</button>
+    </div>
+    <div class="wrap-scroll">
+      <table>
+        <thead><tr>
+          <th>Cliente</th><th>Industria</th><th>Proyecto</th><th>Partner</th>
+          <th>SDG Manager</th><th>Close</th><th>Estado</th><th>Funding</th><th></th>
+        </tr></thead>
+        <tbody id="pipeBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FUNDING PS ===== -->
+<div id="page-funding" class="page">
+  <div class="tcard">
+    <div class="thead-bar">
+      <span class="thead-title">Professional Services Funding</span>
+      <div class="filters">
+        <input type="text" id="fSearch" placeholder="Buscar…" oninput="renderFund()">
+        <select id="fState" onchange="renderFund()">
+          <option value="">Todos los estados</option>
+          <option>Cobrado</option><option>Nominado</option><option>Aceptado</option>
+          <option>Cancelado</option><option>Evidencias aportadas</option>
+        </select>
+        <span class="rc" id="fCount"></span>
+      </div>
+      <button class="btn primary" onclick="openFundModal()">+ Nuevo funding</button>
+    </div>
+    <div class="wrap-scroll">
+      <table>
+        <thead><tr>
+          <th>Cliente</th><th>Industria</th><th>Proyecto</th><th>Partner</th>
+          <th>Tipología</th><th>Claim Q</th><th>Fund (USD)</th><th>Estado</th><th></th>
+        </tr></thead>
+        <tbody id="fundBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PIPE FUNDS ===== -->
+<div id="page-pipefunds" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+    <span class="sec" style="margin:0">Pipeline de funding futuro</span>
+    <button class="btn primary" onclick="openPFModal()">+ Nuevo pipe fund</button>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:1.25rem">
+    <div class="metric ab" style="flex:1"><div class="metric-label">Total solicitado</div><div class="metric-value" id="pfTotal">—</div></div>
+    <div class="metric at" style="flex:1"><div class="metric-label">Impacto esperado</div><div class="metric-value" id="pfImpact">—</div></div>
+    <div class="metric ag" style="flex:1"><div class="metric-label">Registros</div><div class="metric-value" id="pfCount">—</div></div>
+  </div>
+  <div class="pfgrid" id="pfGrid"></div>
+</div>
+
+</div><!-- /shell -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- Pipeline modal -->
+<div class="overlay" id="pipeOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('pipeOverlay')">✕</button>
+    <h2 id="pipeModalTitle">Nueva oportunidad</h2>
+    <input type="hidden" id="pipeEditId">
+    <div class="form-grid">
+      <div class="form-group"><label>Cliente *</label><input id="f-client" placeholder="Ej: BANCO SANTANDER"></div>
+      <div class="form-group"><label>Industria *</label>
+        <select id="f-industry">
+          <option value="">— seleccionar —</option>
+          <option>Consumer Goods & Retail</option><option>FSI</option>
+          <option>Health & Pharma</option><option>Industrial & Manufacturing</option>
+          <option>Public Sector</option><option>Telco & Utilities</option>
+          <option>Travel & Entertainment</option><option>Wholesale distribution</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Proyecto *</label><input id="f-project" placeholder="Nombre del proyecto"></div>
+      <div class="form-group"><label>SDG Business Unit</label><input id="f-bu" placeholder="Ej: SANTANDER"></div>
+      <div class="form-group"><label>SDG Head of Unit</label><input id="f-head" placeholder="Nombre"></div>
+      <div class="form-group"><label>Partner *</label>
+        <select id="f-partner">
+          <option value="">— seleccionar —</option>
+          <option>Microsoft</option><option>Databricks</option>
+          <option>Google Cloud Platform</option><option>AWS</option>
+          <option>SAP</option><option>dbt</option><option>Snowflake</option>
+        </select>
+      </div>
+      <div class="form-group"><label>SDG Manager</label><input id="f-manager" placeholder="Nombre del manager"></div>
+      <div class="form-group"><label>Año apertura</label><input id="f-openY" type="number" placeholder="2026" min="2024" max="2030"></div>
+      <div class="form-group"><label>Q apertura</label>
+        <select id="f-openQ"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+      </div>
+      <div class="form-group"><label>Año cierre estimado</label><input id="f-closeY" type="number" placeholder="2026" min="2024" max="2030"></div>
+      <div class="form-group"><label>Q cierre estimado</label>
+        <select id="f-closeQ"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+      </div>
+      <div class="form-group"><label>Estado *</label>
+        <select id="f-state">
+          <option>In Progress</option><option>WIN</option><option>LOST</option><option>Negotiate</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Funding disponible</label>
+        <select id="f-funding"><option value="NO">NO</option><option value="SÍ">SÍ</option></select>
+      </div>
+      <div class="form-group"><label>Software Revenue (€)</label><input id="f-revenue" type="number" placeholder="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('pipeOverlay')">Cancelar</button>
+      <button class="btn primary" onclick="savePipe()">Guardar oportunidad</button>
+    </div>
+  </div>
+</div>
+
+<!-- Funding modal -->
+<div class="overlay" id="fundOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('fundOverlay')">✕</button>
+    <h2 id="fundModalTitle">Nuevo funding</h2>
+    <input type="hidden" id="fundEditId">
+    <div class="form-grid">
+      <div class="form-group"><label>Cliente *</label><input id="ff-client" placeholder="Nombre del cliente"></div>
+      <div class="form-group"><label>Industria *</label>
+        <select id="ff-industry">
+          <option value="">— seleccionar —</option>
+          <option>Consumer Goods & Retail</option><option>FSI</option>
+          <option>Health & Pharma</option><option>Industrial & Manufacturing</option>
+          <option>Public Sector</option><option>Telco & Utilities</option>
+          <option>Travel & Entertainment</option><option>Wholesale distribution</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Proyecto *</label><input id="ff-project" placeholder="Nombre del proyecto"></div>
+      <div class="form-group"><label>Partner *</label>
+        <select id="ff-partner">
+          <option value="">— seleccionar —</option>
+          <option>Microsoft</option><option>Databricks</option>
+          <option>Google Cloud Platform</option><option>AWS</option>
+          <option>SAP</option><option>dbt</option><option>Snowflake</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Tipología</label>
+        <select id="ff-type">
+          <option>Partner-led (PoV- Proof of Value)</option>
+          <option>Partner-led (Deployment project)</option>
+          <option>ECIF</option><option>DCIF</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Specialization</label>
+        <select id="ff-spec"><option>Analytics</option><option>AI</option><option>Other</option></select>
+      </div>
+      <div class="form-group"><label>SDG BU</label><input id="ff-bu" placeholder="Ej: SANTANDER"></div>
+      <div class="form-group"><label>SDG Head of Unit</label><input id="ff-head" placeholder="Nombre"></div>
+      <div class="form-group"><label>SDG Manager</label><input id="ff-manager" placeholder="Nombre del manager"></div>
+      <div class="form-group"><label>Claim Q</label>
+        <select id="ff-claimQ"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+      </div>
+      <div class="form-group"><label>Claim Year</label><input id="ff-claimY" type="number" placeholder="2026" min="2024" max="2030"></div>
+      <div class="form-group"><label>Fund (USD) *</label><input id="ff-amount" type="number" placeholder="10000" min="0"></div>
+      <div class="form-group"><label>Claim ID / PO ID</label><input id="ff-claimid" placeholder="Opcional"></div>
+      <div class="form-group"><label>PAL Connected</label>
+        <select id="ff-pal"><option value="NO">NO</option><option value="SÍ">SÍ</option></select>
+      </div>
+      <div class="form-group"><label>Estado *</label>
+        <select id="ff-state">
+          <option>Nominado</option><option>Aceptado</option><option>Cobrado</option>
+          <option>Cancelado</option><option>Evidencias aportadas</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('fundOverlay')">Cancelar</button>
+      <button class="btn primary" onclick="saveFund()">Guardar funding</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pipe funds modal -->
+<div class="overlay" id="pfOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('pfOverlay')">✕</button>
+    <h2 id="pfModalTitle">Nuevo pipe fund</h2>
+    <input type="hidden" id="pfEditId">
+    <div class="form-grid">
+      <div class="form-group"><label>Cliente *</label><input id="pf-client" placeholder="Nombre del cliente"></div>
+      <div class="form-group"><label>Partner *</label>
+        <select id="pf-partner">
+          <option>Microsoft</option><option>Databricks</option>
+          <option>Google Cloud Platform</option><option>AWS</option><option>SAP</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Proyecto *</label><input id="pf-project" placeholder="Descripción del proyecto"></div>
+      <div class="form-group"><label>Tipo de fondo</label>
+        <select id="pf-type"><option>Partner-led</option><option>ECIF</option><option>DCIF</option></select>
+      </div>
+      <div class="form-group"><label>Cantidad aprox (USD) *</label><input id="pf-amount" type="number" placeholder="15000" min="0"></div>
+      <div class="form-group"><label>Fecha aprox</label><input id="pf-date" type="date"></div>
+      <div class="form-group"><label>% WIN (0–100)</label><input id="pf-win" type="number" placeholder="50" min="0" max="100"></div>
+      <div class="form-group"><label>Responsable cliente</label><input id="pf-resp" placeholder="Nombre del responsable"></div>
+      <div class="form-group full"><label>Comentarios</label><textarea id="pf-notes" placeholder="Notas adicionales…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('pfOverlay')">Cancelar</button>
+      <button class="btn primary" onclick="savePF()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA (seeded from Excel) ──────────────────────────────────────────────────
+const SEED_PIPE = [
+  {id:1,client:"BON PREU",industry:"Consumer Goods & Retail",project:"Fabric Power BI- Copilot",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",manager:"Óscar García",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"WIN",funding:"SÍ",revenue:""},
+  {id:2,client:"ALLIANZ",industry:"FSI",project:"SAS Decomm",bu:"INS- Allianz, SCA & AXA",head:"Alfonso Bermúdez",partner:"Microsoft",manager:"Alfonso Bermúdez",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:3,client:"BANCO SANTANDER",industry:"FSI",project:"Radar Regulatorio",bu:"SANTANDER",head:"Gabriel Iniesto",partner:"Microsoft",manager:"Alberto Manzano/ Gabriel Iniesto",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q1",state:"WIN",funding:"NO",revenue:""},
+  {id:4,client:"BANCO SANTANDER",industry:"FSI",project:"Predictive Github Copilot Boost",bu:"SANTANDER",head:"Gabriel Iniesto",partner:"Microsoft",manager:"Alberto Manzano/ Gabriel Iniesto",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q1",state:"WIN",funding:"NO",revenue:""},
+  {id:5,client:"BANCO SANTANDER",industry:"FSI",project:"Predictive Maintenance",bu:"SANTANDER",head:"Gabriel Iniesto",partner:"Microsoft",manager:"Alberto Manzano/ Gabriel Iniesto",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"WIN",funding:"NO",revenue:""},
+  {id:6,client:"ALMIRALL",industry:"Health & Pharma",project:"Proyecto TaskForce US 2025",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",manager:"Jordi Sánchez",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q3",state:"WIN",funding:"SÍ",revenue:""},
+  {id:7,client:"ALMIRALL",industry:"Health & Pharma",project:"Proyecto Omnicanalidad 3.0",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",manager:"Jordi Sánchez",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q3",state:"WIN",funding:"SÍ",revenue:""},
+  {id:8,client:"ALMIRALL",industry:"Health & Pharma",project:"Proyecto Global Procurement Phase III",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",manager:"Jordi Sánchez",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q3",state:"WIN",funding:"SÍ",revenue:""},
+  {id:9,client:"ASTELLAS",industry:"Health & Pharma",project:"Portfolio Overview",bu:"ASTELLAS & ABBOTT",head:"Xavier Ferre",partner:"Microsoft",manager:"Vicent Benet",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:10,client:"CAF",industry:"Industrial & Manufacturing",project:"Migración Fabric",bu:"SAP Business",head:"Laura Cristina Martínez",partner:"Microsoft",manager:"Fernando Sánchez",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"WIN",funding:"SÍ",revenue:""},
+  {id:11,client:"EUROFRED",industry:"Industrial & Manufacturing",project:"Technical Support Assistance Tool",bu:"SAP Business",head:"Cristina Fernández",partner:"Microsoft",manager:"Marcos Rodríguez",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q1",state:"WIN",funding:"SÍ",revenue:""},
+  {id:12,client:"NAVANTIA SL",industry:"Public Sector",project:"Lote 1 Gobierno y Analítica de Datos",bu:"Public Esp",head:"Ferrán Puchol",partner:"Microsoft",manager:"Andrés Acosta",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q3",state:"LOST",funding:"NO",revenue:""},
+  {id:13,client:"EMT",industry:"Public Sector",project:"Plataforma de Datos",bu:"Public Esp",head:"Ferrán Puchol",partner:"Microsoft",manager:"Andrés Acosta",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q3",state:"LOST",funding:"NO",revenue:""},
+  {id:14,client:"PALLADIUM",industry:"Travel & Entertainment",project:"PoC Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"Manu Giorgetti",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"WIN",funding:"SÍ",revenue:""},
+  {id:15,client:"MELIÁ",industry:"Travel & Entertainment",project:"Despliegue Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"Manu Giorgetti",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"WIN",funding:"SÍ",revenue:""},
+  {id:16,client:"NH HOTEL GROUP",industry:"Travel & Entertainment",project:"Proof of Value Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"Manu Giorgetti",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"WIN",funding:"SÍ",revenue:""},
+  {id:17,client:"IBERIA",industry:"Travel & Entertainment",project:"F64 Fabric Deployment",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"David Agra",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q4",state:"WIN",funding:"SÍ",revenue:""},
+  {id:18,client:"VUELING",industry:"Travel & Entertainment",project:"Transformación Digital Data",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"David Agra",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"In Progress",funding:"NO",revenue:""},
+  {id:19,client:"AENA",industry:"Travel & Entertainment",project:"Gobierno del Dato",bu:"Public Esp",head:"Ferrán Puchol",partner:"Microsoft",manager:"David Agra",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q2",state:"In Progress",funding:"SÍ",revenue:""},
+  {id:20,client:"SEAT",industry:"Industrial & Manufacturing",project:"PoC IA",bu:"SAP Business",head:"Laura Cristina Martínez",partner:"Microsoft",manager:"Juan Antonio Casado",openY:2025,openQ:"Q3",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:21,client:"MUTUA MADRILEÑA",industry:"FSI",project:"AI Design Win - Call center",bu:"INS- MUTUA",head:"Alberto Manzano",partner:"Microsoft",manager:"Alberto Manzano",openY:2025,openQ:"Q3",closeY:2025,closeQ:"Q4",state:"In Progress",funding:"NO",revenue:""},
+  {id:22,client:"MAPFRE",industry:"FSI",project:"Renovación contrato analítica",bu:"INS- MAPFRE",head:"Alberto Manzano",partner:"Microsoft",manager:"Alberto Manzano",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"WIN",funding:"NO",revenue:""},
+  {id:23,client:"AXA",industry:"FSI",project:"Fraude detección IA",bu:"INS- Allianz, SCA & AXA",head:"Alfonso Bermúdez",partner:"Microsoft",manager:"Alfonso Bermúdez",openY:2025,openQ:"Q3",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:24,client:"REPSOL",industry:"Industrial & Manufacturing",project:"Optimización pozos ML",bu:"Industrial",head:"Andrés Acosta",partner:"Databricks",manager:"Andrés Acosta",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"WIN",funding:"NO",revenue:""},
+  {id:25,client:"ENDESA",industry:"Telco & Utilities",project:"Smart Grid Analytics",bu:"Telco",head:"Andrés Acosta",partner:"Databricks",manager:"Andrés Acosta",openY:2025,openQ:"Q3",closeY:2025,closeQ:"Q4",state:"In Progress",funding:"NO",revenue:""},
+  {id:26,client:"NATURGY",industry:"Telco & Utilities",project:"Forecast Demand",bu:"Telco",head:"Ferrán Puchol",partner:"Google Cloud Platform",manager:"Ferrán Puchol",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"LOST",funding:"NO",revenue:""},
+  {id:27,client:"ORANGE",industry:"Telco & Utilities",project:"Customer Churn AI",bu:"Telco",head:"Cristina Fernández",partner:"Google Cloud Platform",manager:"Cristina Fernández",openY:2025,openQ:"Q3",closeY:2025,closeQ:"Q4",state:"In Progress",funding:"NO",revenue:""},
+  {id:28,client:"CARREFOUR",industry:"Consumer Goods & Retail",project:"Retail Analytics Fabric",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",manager:"Óscar García",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q2",state:"WIN",funding:"SÍ",revenue:""},
+  {id:29,client:"EL CORTE INGLÉS",industry:"Consumer Goods & Retail",project:"Personalización digital",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Google Cloud Platform",manager:"Óscar García",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"In Progress",funding:"NO",revenue:""},
+  {id:30,client:"MERCADONA",industry:"Consumer Goods & Retail",project:"Supply Chain AI",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"AWS",manager:"Ferrán Puchol",openY:2025,openQ:"Q3",closeY:2025,closeQ:"Q4",state:"In Progress",funding:"NO",revenue:""},
+  {id:31,client:"AGROLIMEN",industry:"Consumer Goods & Retail",project:"PoC Microsoft Fabric 2",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",manager:"Xavier Miralles",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:32,client:"ALCAMPO",industry:"Consumer Goods & Retail",project:"Microsoft Fabric Assessment",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",manager:"Óscar García",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:33,client:"NOEL",industry:"Consumer Goods & Retail",project:"Azure AI Foundry PoV",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",manager:"Joan Marchan",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:34,client:"FERROVIAL",industry:"Industrial & Manufacturing",project:"Construcción IA",bu:"Industrial",head:"Laura Cristina Martínez",partner:"AWS",manager:"Laura Cristina Martínez",openY:2025,openQ:"Q2",closeY:2025,closeQ:"Q3",state:"LOST",funding:"NO",revenue:""},
+  {id:35,client:"ACCIONA",industry:"Industrial & Manufacturing",project:"Energia renovable analytics",bu:"Industrial",head:"Andrés Acosta",partner:"Databricks",manager:"Andrés Acosta",openY:2025,openQ:"Q3",closeY:2025,closeQ:"Q4",state:"WIN",funding:"NO",revenue:""},
+  {id:36,client:"ACS",industry:"Industrial & Manufacturing",project:"Digital Twin Infraestructuras",bu:"Industrial",head:"Laura Cristina Martínez",partner:"Google Cloud Platform",manager:"Laura Cristina Martínez",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:37,client:"ANTOLÍN",industry:"Industrial & Manufacturing",project:"PoC GenAI",bu:"Industrial",head:"Miguel Valencia",partner:"Microsoft",manager:"Miguel Valencia",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:38,client:"ANTOLÍN",industry:"Industrial & Manufacturing",project:"Casos de uso IA",bu:"Industrial",head:"Miguel Valencia",partner:"Microsoft",manager:"Miguel Valencia",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:39,client:"BARCELÓ",industry:"Travel & Entertainment",project:"Fabric Migration",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"Manu Giorgetti",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:40,client:"UMIVALE",industry:"FSI",project:"RFP Data Platform",bu:"FSI",head:"Andrés Acosta",partner:"Microsoft",manager:"Andrés Acosta",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"In Progress",funding:"NO",revenue:""},
+  {id:41,client:"SEGURCAIXA",industry:"FSI",project:"Accounting Hedge DCIF",bu:"FSI",head:"Alfonso Bermúdez",partner:"Databricks",manager:"Alfonso Bermúdez",openY:2025,openQ:"Q4",closeY:2026,closeQ:"Q2",state:"Negotiate",funding:"NO",revenue:""},
+  {id:42,client:"ESTEVE",industry:"Health & Pharma",project:"F64 Fabric Deployment",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",manager:"Eric Carro",openY:2025,openQ:"Q1",closeY:2026,closeQ:"Q4",state:"In Progress",funding:"NO",revenue:""},
+  {id:43,client:"DACSA",industry:"Consumer Goods & Retail",project:"PoC Fabric",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",manager:"Albert Castellá",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q1",state:"WIN",funding:"SÍ",revenue:""},
+  {id:44,client:"GOVERN D'ANDORRA",industry:"Public Sector",project:"PoC Fabric Gobierno",bu:"Public Gencat",head:"Ferrán Puchol",partner:"Microsoft",manager:"Alejandro Ortiz",openY:2024,openQ:"Q3",closeY:2024,closeQ:"Q3",state:"WIN",funding:"NO",revenue:""},
+  {id:45,client:"CANAL ISABEL II",industry:"Public Sector",project:"Azure Databricks integración",bu:"Public Esp",head:"Ferrán Puchol",partner:"Microsoft",manager:"Andrés Acosta",openY:2024,openQ:"Q4",closeY:2025,closeQ:"Q1",state:"WIN",funding:"NO",revenue:""},
+  {id:46,client:"VERISURE",industry:"Industrial & Manufacturing",project:"PoC IA Transcripción Whisper",bu:"Industrial",head:"Andrés Acosta",partner:"Microsoft",manager:"Diego Fernández",openY:2024,openQ:"Q4",closeY:2025,closeQ:"Q1",state:"WIN",funding:"NO",revenue:""},
+  {id:47,client:"AMADEUS",industry:"Travel & Entertainment",project:"PoC Fabric",bu:"Industrial & Manufacturing",head:"Andrés Acosta",partner:"Microsoft",manager:"Ricardo Fernández",openY:2024,openQ:"Q3",closeY:2024,closeQ:"Q3",state:"WIN",funding:"SÍ",revenue:""},
+  {id:48,client:"AMADEUS",industry:"Travel & Entertainment",project:"Data Platform Transversal (Databricks)",bu:"Industrial & Manufacturing",head:"Andrés Acosta",partner:"Microsoft",manager:"Ricardo Fernández",openY:2024,openQ:"Q3",closeY:2024,closeQ:"Q3",state:"WIN",funding:"SÍ",revenue:""},
+  {id:49,client:"FCC HIDROTEC",industry:"Industrial & Manufacturing",project:"Copilot PBI Fabric",bu:"Industrial",head:"Andrés Acosta",partner:"Microsoft",manager:"Andrés Acosta",openY:2025,openQ:"Q1",closeY:2025,closeQ:"Q1",state:"WIN",funding:"SÍ",revenue:""},
+  {id:50,client:"LA ZARAGOZANA",industry:"Consumer Goods & Retail",project:"Despliegue Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",manager:"David Agra",openY:2024,openQ:"Q2",closeY:2024,closeQ:"Q2",state:"WIN",funding:"SÍ",revenue:""},
+];
+
+const SEED_FUND = [
+  {id:1,client:"LA ZARAGOZANA",industry:"Consumer Goods & Retail",project:"Depliegue Fabric",bu:"Hospitality & Entertainment",head:"Cristina Fernández",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q2",claimY:2024,amount:5000,pal:"NO",state:"Cobrado",manager:"David Agra"},
+  {id:2,client:"GOVERN D'ANDORRA",industry:"Public Sector",project:"PoC Fabric",bu:"Public Gencat",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3214563",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q3",claimY:2024,amount:10000,pal:"NO",state:"Cobrado",manager:"Alejandro Ortiz"},
+  {id:3,client:"AMADEUS",industry:"Travel & Entertainment",project:"PoC Fabric",bu:"Industrial & Manufacturing",head:"Andrés Acosta",partner:"Microsoft",claimId:"3215163",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q3",claimY:2024,amount:10000,pal:"SÍ",state:"Cobrado",manager:"Ricardo Fernández"},
+  {id:4,client:"AMADEUS",industry:"Travel & Entertainment",project:"Data Platform Transversal (Databricks)",bu:"Industrial & Manufacturing",head:"Andrés Acosta",partner:"Microsoft",claimId:"3219219",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q3",claimY:2024,amount:50000,pal:"SÍ",state:"Cobrado",manager:"Ricardo Fernández"},
+  {id:5,client:"CANAL ISABEL II",industry:"Public Sector",project:"Azure Databricks integración",bu:"Public Esp",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3231474",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:10000,pal:"NO",state:"Cobrado",manager:"Andrés Acosta"},
+  {id:6,client:"VERISURE",industry:"Industrial & Manufacturing",project:"PoC IA Transcripción Whisper",bu:"Industrial & Manufacturing",head:"Andrés Acosta",partner:"Microsoft",claimId:"3236693",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"AI",claimQ:"Q1",claimY:2025,amount:10000,pal:"NO",state:"Cobrado",manager:"Diego Fernández"},
+  {id:7,client:"ALMIRALL",industry:"Health & Pharma",project:"Global Procurement Phase III- Databricks",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3252526",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:5000,pal:"SÍ",state:"Cobrado",manager:"Jordi Sánchez"},
+  {id:8,client:"ALMIRALL",industry:"Health & Pharma",project:"Omnicanalidad 3.0- Databricks",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3252529",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:5000,pal:"SÍ",state:"Cobrado",manager:"Jordi Sánchez"},
+  {id:9,client:"ALMIRALL",industry:"Health & Pharma",project:"TaskForce US 2025- Databricks",bu:"Pharma",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3252533",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:5000,pal:"SÍ",state:"Cobrado",manager:"Jordi Sánchez"},
+  {id:10,client:"FCC HIDROTEC",industry:"Industrial & Manufacturing",project:"Copilot PBI Fabric",bu:"Industrial & Manufacturing",head:"Andrés Acosta",partner:"Microsoft",claimId:"",ps:"",type:"ECIF",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:25000,pal:"NO",state:"Cobrado",manager:"Andrés Acosta"},
+  {id:11,client:"ESTEVE",industry:"Health & Pharma",project:"PoC Fabric",bu:"SAP Business",head:"Laura Cristina Martínez",partner:"Microsoft",claimId:"3270990",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:10000,pal:"SÍ",state:"Cobrado",manager:"Eric Carro"},
+  {id:12,client:"DACSA",industry:"Consumer Goods & Retail",project:"PoC Fabric",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3273077",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:10000,pal:"SÍ",state:"Cobrado",manager:"Albert Castellá"},
+  {id:13,client:"BON PREU",industry:"Consumer Goods & Retail",project:"PoC Fabric",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",claimId:"3274162",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q1",claimY:2025,amount:10000,pal:"NO",state:"Cobrado",manager:"Óscar García"},
+  {id:14,client:"PALLADIUM",industry:"Travel & Entertainment",project:"PoC Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q2",claimY:2025,amount:10000,pal:"NO",state:"Cobrado",manager:"Manu Giorgetti"},
+  {id:15,client:"MELIÁ",industry:"Travel & Entertainment",project:"Despliegue Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q2",claimY:2025,amount:15000,pal:"NO",state:"Cobrado",manager:"Manu Giorgetti"},
+  {id:16,client:"IBERIA",industry:"Travel & Entertainment",project:"F64 Fabric Deployment",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q3",claimY:2025,amount:50000,pal:"SÍ",state:"Nominado",manager:"David Agra"},
+  {id:17,client:"SEAT",industry:"Industrial & Manufacturing",project:"PoC IA",bu:"SAP Business",head:"Laura Cristina Martínez",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"AI",claimQ:"Q2",claimY:2026,amount:15000,pal:"NO",state:"Nominado",manager:"Juan Antonio Casado"},
+  {id:18,client:"AGROLIMEN",industry:"Consumer Goods & Retail",project:"PoC Microsoft Fabric 2",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q2",claimY:2026,amount:15000,pal:"NO",state:"Nominado",manager:"Xavier Miralles"},
+  {id:19,client:"ALCAMPO",industry:"Consumer Goods & Retail",project:"Microsoft Fabric Assessment",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q2",claimY:2026,amount:15000,pal:"NO",state:"Nominado",manager:"Óscar García"},
+  {id:20,client:"NOEL",industry:"Consumer Goods & Retail",project:"Azure AI Foundry PoV",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"AI",claimQ:"Q2",claimY:2026,amount:15000,pal:"NO",state:"Nominado",manager:"Joan Marchan"},
+  {id:21,client:"UMIVALE",industry:"FSI",project:"RFP Data",bu:"FSI",head:"Andrés Acosta",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led",spec:"Analytics",claimQ:"Q2",claimY:2026,amount:15000,pal:"NO",state:"Nominado",manager:"Andrés Acosta"},
+  {id:22,client:"UMIVALE",industry:"FSI",project:"Fabric Deployment",bu:"FSI",head:"Andrés Acosta",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led",spec:"Analytics",claimQ:"Q3",claimY:2026,amount:15000,pal:"NO",state:"Nominado",manager:"Andrés Acosta"},
+  {id:23,client:"BANCO SANTANDER",industry:"FSI",project:"Migración ARCO",bu:"SANTANDER",head:"Gabriel Iniesto",partner:"Microsoft",claimId:"",ps:"",type:"ECIF",spec:"Analytics",claimQ:"Q2",claimY:2026,amount:30000,pal:"NO",state:"Nominado",manager:"Gabriel Iniesto"},
+  {id:24,client:"BARCELÓ",industry:"Travel & Entertainment",project:"Fabric migration",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",claimId:"",ps:"",type:"ECIF",spec:"Analytics",claimQ:"Q2",claimY:2026,amount:50000,pal:"NO",state:"Nominado",manager:"Manu Giorgetti"},
+  {id:25,client:"MUTUA MADRILEÑA",industry:"FSI",project:"AI Call center ECIF",bu:"INS- MUTUA",head:"Alberto Manzano",partner:"Microsoft",claimId:"",ps:"",type:"ECIF",spec:"AI",claimQ:"Q4",claimY:2025,amount:50000,pal:"NO",state:"Aceptado",manager:"Alberto Manzano"},
+  {id:26,client:"SEGURCAIXA",industry:"FSI",project:"Accounting Hedge",bu:"FSI",head:"Alfonso Bermúdez",partner:"Databricks",claimId:"",ps:"",type:"DCIF",spec:"Analytics",claimQ:"Q2",claimY:2026,amount:12000,pal:"NO",state:"Nominado",manager:"Alfonso Bermúdez"},
+  {id:27,client:"REPSOL",industry:"Industrial & Manufacturing",project:"Optimización pozos",bu:"Industrial",head:"Andrés Acosta",partner:"Databricks",claimId:"",ps:"",type:"DCIF",spec:"Analytics",claimQ:"Q3",claimY:2025,amount:20000,pal:"NO",state:"Aceptado",manager:"Andrés Acosta"},
+  {id:28,client:"CAF",industry:"Industrial & Manufacturing",project:"Migración Fabric",bu:"SAP Business",head:"Laura Cristina Martínez",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q2",claimY:2025,amount:10000,pal:"NO",state:"Cobrado",manager:"Fernando Sánchez"},
+  {id:29,client:"CARREFOUR",industry:"Consumer Goods & Retail",project:"Retail Analytics Fabric",bu:"CPG & RETAIL",head:"Ferrán Puchol",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (Deployment project)",spec:"Analytics",claimQ:"Q2",claimY:2025,amount:15000,pal:"NO",state:"Cobrado",manager:"Óscar García"},
+  {id:30,client:"NH HOTEL GROUP",industry:"Travel & Entertainment",project:"PoV Fabric",bu:"Hospitality",head:"Cristina Fernández",partner:"Microsoft",claimId:"",ps:"",type:"Partner-led (PoV- Proof of Value)",spec:"Analytics",claimQ:"Q3",claimY:2025,amount:10000,pal:"NO",state:"Cobrado",manager:"Manu Giorgetti"},
+];
+
+const SEED_PF = [
+  {id:1,client:"ANTOLÍN",partner:"Microsoft",project:"PoC GenAI",type:"Partner-led",amount:15000,date:"2026-04-01",win:25,resp:"Miguel Valencia/ Héctor Ramilla",notes:""},
+  {id:2,client:"ANTOLÍN",partner:"Microsoft",project:"Casos de uso IA",type:"Partner-led",amount:15000,date:"2026-04-01",win:25,resp:"Miguel Valencia/ Héctor Ramilla",notes:""},
+  {id:3,client:"Iberia",partner:"Microsoft",project:"F64 Fabric Deployment",type:"Partner-led",amount:15000,date:"2026-05-01",win:75,resp:"David Agra",notes:""},
+  {id:4,client:"Iberia",partner:"Microsoft",project:"F64 Fabric Deployment (2)",type:"Partner-led",amount:15000,date:"2026-05-01",win:75,resp:"David Agra",notes:""},
+  {id:5,client:"Middle East",partner:"Microsoft",project:"PoC Microsoft Fabric",type:"Partner-led",amount:15000,date:"2026-05-01",win:50,resp:"Anas",notes:""},
+  {id:6,client:"Ayto. Logroño",partner:"Microsoft",project:"PoC Data Azure",type:"Partner-led",amount:15000,date:"2026-06-26",win:50,resp:"Andrés Acosta",notes:""},
+  {id:7,client:"UMIVALE",partner:"Microsoft",project:"RFP Data",type:"Partner-led",amount:15000,date:"2026-06-26",win:75,resp:"Andrés Acosta",notes:""},
+  {id:8,client:"UMIVALE",partner:"Microsoft",project:"Microsoft Fabric Deployment",type:"Partner-led",amount:15000,date:"2026-07-29",win:75,resp:"Andrés Acosta",notes:""},
+  {id:9,client:"SEAT",partner:"Microsoft",project:"PoC IA",type:"Partner-led",amount:15000,date:"2026-06-01",win:60,resp:"Juan Antonio Casado",notes:""},
+  {id:10,client:"Agrolimen",partner:"Microsoft",project:"PoC Microsoft Fabric 2",type:"Partner-led",amount:15000,date:"2026-06-26",win:50,resp:"Xavier Miralles",notes:""},
+  {id:11,client:"Banco Santander",partner:"Databricks",project:"Getnet CDP",type:"DCIF",amount:50000,date:"2026-05-26",win:0,resp:"Gabriel Iniesto",notes:""},
+  {id:12,client:"Banco Santander",partner:"Microsoft",project:"Migración ARCO",type:"ECIF",amount:30000,date:"2026-06-28",win:25,resp:"Gabriel Iniesto",notes:""},
+  {id:13,client:"ESTEVE",partner:"Microsoft",project:"F64 Fabric Deployment",type:"Partner-led",amount:15000,date:"2026-10-26",win:50,resp:"Eric Carro",notes:""},
+  {id:14,client:"Barceló",partner:"Microsoft",project:"Fabric migration",type:"ECIF",amount:50000,date:"2026-05-26",win:15,resp:"Manu Giorgetti",notes:""},
+  {id:15,client:"Noel",partner:"Microsoft",project:"Azure AI Foundry PoV",type:"Partner-led",amount:15000,date:"2026-05-26",win:50,resp:"Joan Marchan",notes:""},
+  {id:16,client:"ALCAMPO",partner:"Microsoft",project:"Microsoft Fabric Assessment",type:"Partner-led",amount:15000,date:"2026-05-26",win:50,resp:"Óscar García",notes:""},
+  {id:17,client:"SEGURCAIXA",partner:"Databricks",project:"Accounting Hedge",type:"DCIF",amount:12000,date:"2026-06-26",win:100,resp:"Alfonso Bermudez",notes:""},
+];
+
+// ── STATE (localStorage persistence) ────────────────────────────────────────
+function load(key, seed) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : seed.map(x=>({...x})); }
+  catch(e) { return seed.map(x=>({...x})); }
+}
+function save(key, arr) {
+  try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e){}
+}
+let pipe = load('sdg_pipe', SEED_PIPE);
+let fund = load('sdg_fund', SEED_FUND);
+let pf   = load('sdg_pf',   SEED_PF);
+let nextPipeId = pipe.reduce((m,r)=>Math.max(m,r.id),0)+1;
+let nextFundId = fund.reduce((m,r)=>Math.max(m,r.id),0)+1;
+let nextPFId   = pf.reduce((m,r)=>Math.max(m,r.id),0)+1;
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function pill(s){
+  const map={'WIN':'win','In Progress':'prog','LOST':'lost','Negotiate':'neg','Cobrado':'cobrado','Nominado':'nominado','Aceptado':'aceptado','Cancelado':'cancelado','Evidencias aportadas':'evidencias'};
+  return `<span class="pill ${map[s]||''}">${s}</span>`;
+}
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+// ── PIPELINE TABLE ────────────────────────────────────────────────────────────
+function renderPipe(){
+  const q=(document.getElementById('pSearch').value||'').toLowerCase();
+  const st=document.getElementById('pState').value;
+  const pt=document.getElementById('pPartner').value;
+  let rows=pipe.filter(r=>{
+    const mq=!q||r.client.toLowerCase().includes(q)||r.project.toLowerCase().includes(q)||(r.manager||'').toLowerCase().includes(q);
+    return mq&&(!st||r.state===st)&&(!pt||r.partner===pt);
+  });
+  document.getElementById('pCount').textContent=rows.length+' resultado'+(rows.length!==1?'s':'');
+  document.getElementById('pipeBody').innerHTML=rows.map(r=>`<tr>
+    <td style="font-weight:500">${r.client}</td>
+    <td style="color:var(--text2);font-size:12px">${r.industry}</td>
+    <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.project}</td>
+    <td><span class="ptag">${r.partner}</span></td>
+    <td style="color:var(--text2);font-size:12px">${r.manager||''}</td>
+    <td style="color:var(--text3);font-size:12px;white-space:nowrap">${r.closeQ} ${r.closeY}</td>
+    <td>${pill(r.state)}</td>
+    <td style="font-size:12px;color:${r.funding==='SÍ'?'var(--teal)':'var(--text3)'}">${r.funding}</td>
+    <td style="white-space:nowrap">
+      <button class="btn sm" onclick="editPipe(${r.id})" title="Editar">✏️</button>
+      <button class="btn sm danger" onclick="deletePipe(${r.id})" title="Eliminar">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openPipeModal(id){
+  document.getElementById('pipeEditId').value='';
+  document.getElementById('pipeModalTitle').textContent='Nueva oportunidad';
+  ['client','project','bu','head','manager','revenue'].forEach(f=>document.getElementById('f-'+f).value='');
+  ['industry','partner','state','funding'].forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.selectedIndex=0;});
+  document.getElementById('f-openY').value=new Date().getFullYear();
+  document.getElementById('f-closeY').value=new Date().getFullYear();
+  document.getElementById('f-state').value='In Progress';
+  document.getElementById('f-funding').value='NO';
+  openModal('pipeOverlay');
+}
+function editPipe(id){
+  const r=pipe.find(x=>x.id===id); if(!r) return;
+  document.getElementById('pipeEditId').value=id;
+  document.getElementById('pipeModalTitle').textContent='Editar oportunidad';
+  document.getElementById('f-client').value=r.client;
+  document.getElementById('f-industry').value=r.industry;
+  document.getElementById('f-project').value=r.project;
+  document.getElementById('f-bu').value=r.bu||'';
+  document.getElementById('f-head').value=r.head||'';
+  document.getElementById('f-partner').value=r.partner;
+  document.getElementById('f-manager').value=r.manager||'';
+  document.getElementById('f-openY').value=r.openY;
+  document.getElementById('f-openQ').value=r.openQ;
+  document.getElementById('f-closeY').value=r.closeY;
+  document.getElementById('f-closeQ').value=r.closeQ;
+  document.getElementById('f-state').value=r.state;
+  document.getElementById('f-funding').value=r.funding;
+  document.getElementById('f-revenue').value=r.revenue||'';
+  openModal('pipeOverlay');
+}
+function savePipe(){
+  const client=document.getElementById('f-client').value.trim();
+  const industry=document.getElementById('f-industry').value;
+  const project=document.getElementById('f-project').value.trim();
+  const partner=document.getElementById('f-partner').value;
+  if(!client||!industry||!project||!partner){alert('Completa los campos obligatorios (*)');return;}
+  const editId=parseInt(document.getElementById('pipeEditId').value)||0;
+  const rec={
+    client,industry,project,partner,
+    bu:document.getElementById('f-bu').value.trim(),
+    head:document.getElementById('f-head').value.trim(),
+    manager:document.getElementById('f-manager').value.trim(),
+    openY:parseInt(document.getElementById('f-openY').value)||2026,
+    openQ:document.getElementById('f-openQ').value,
+    closeY:parseInt(document.getElementById('f-closeY').value)||2026,
+    closeQ:document.getElementById('f-closeQ').value,
+    state:document.getElementById('f-state').value,
+    funding:document.getElementById('f-funding').value,
+    revenue:document.getElementById('f-revenue').value,
+  };
+  if(editId){const i=pipe.findIndex(x=>x.id===editId);pipe[i]={...rec,id:editId};}
+  else{rec.id=nextPipeId++;pipe.push(rec);}
+  save('sdg_pipe',pipe);
+  closeModal('pipeOverlay');
+  renderPipe(); updateKPIs(); updateCharts();
+  toast(editId?'Oportunidad actualizada ✓':'Oportunidad añadida ✓');
+}
+function deletePipe(id){
+  if(!confirm('¿Eliminar esta oportunidad?')) return;
+  pipe=pipe.filter(x=>x.id!==id); save('sdg_pipe',pipe);
+  renderPipe(); updateKPIs(); updateCharts();
+  toast('Oportunidad eliminada');
+}
+
+// ── FUNDING TABLE ─────────────────────────────────────────────────────────────
+function renderFund(){
+  const q=(document.getElementById('fSearch').value||'').toLowerCase();
+  const st=document.getElementById('fState').value;
+  let rows=fund.filter(r=>{
+    const mq=!q||r.client.toLowerCase().includes(q)||r.project.toLowerCase().includes(q);
+    return mq&&(!st||r.state===st);
+  });
+  document.getElementById('fCount').textContent=rows.length+' resultado'+(rows.length!==1?'s':'');
+  document.getElementById('fundBody').innerHTML=rows.map(r=>`<tr>
+    <td style="font-weight:500">${r.client}</td>
+    <td style="color:var(--text2);font-size:12px">${r.industry}</td>
+    <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">${r.project}</td>
+    <td><span class="ptag">${r.partner}</span></td>
+    <td style="font-size:11px;color:var(--text3)">${r.type}</td>
+    <td style="color:var(--text3);font-size:12px;white-space:nowrap">${r.claimQ} ${r.claimY}</td>
+    <td style="font-weight:500">$${(r.amount||0).toLocaleString()}</td>
+    <td>${pill(r.state)}</td>
+    <td style="white-space:nowrap">
+      <button class="btn sm" onclick="editFund(${r.id})">✏️</button>
+      <button class="btn sm danger" onclick="deleteFund(${r.id})">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openFundModal(){
+  document.getElementById('fundEditId').value='';
+  document.getElementById('fundModalTitle').textContent='Nuevo funding';
+  ['client','project','bu','head','manager','claimid'].forEach(f=>document.getElementById('ff-'+f).value='');
+  document.getElementById('ff-claimY').value=new Date().getFullYear();
+  document.getElementById('ff-amount').value='';
+  document.getElementById('ff-state').value='Nominado';
+  document.getElementById('ff-pal').value='NO';
+  openModal('fundOverlay');
+}
+function editFund(id){
+  const r=fund.find(x=>x.id===id); if(!r) return;
+  document.getElementById('fundEditId').value=id;
+  document.getElementById('fundModalTitle').textContent='Editar funding';
+  document.getElementById('ff-client').value=r.client;
+  document.getElementById('ff-industry').value=r.industry;
+  document.getElementById('ff-project').value=r.project;
+  document.getElementById('ff-partner').value=r.partner;
+  document.getElementById('ff-type').value=r.type;
+  document.getElementById('ff-spec').value=r.spec||'Analytics';
+  document.getElementById('ff-bu').value=r.bu||'';
+  document.getElementById('ff-head').value=r.head||'';
+  document.getElementById('ff-manager').value=r.manager||'';
+  document.getElementById('ff-claimQ').value=r.claimQ;
+  document.getElementById('ff-claimY').value=r.claimY;
+  document.getElementById('ff-amount').value=r.amount;
+  document.getElementById('ff-claimid').value=r.claimId||'';
+  document.getElementById('ff-pal').value=r.pal||'NO';
+  document.getElementById('ff-state').value=r.state;
+  openModal('fundOverlay');
+}
+function saveFund(){
+  const client=document.getElementById('ff-client').value.trim();
+  const industry=document.getElementById('ff-industry').value;
+  const project=document.getElementById('ff-project').value.trim();
+  const partner=document.getElementById('ff-partner').value;
+  const amount=parseFloat(document.getElementById('ff-amount').value)||0;
+  if(!client||!industry||!project||!partner){alert('Completa los campos obligatorios (*)');return;}
+  const editId=parseInt(document.getElementById('fundEditId').value)||0;
+  const rec={
+    client,industry,project,partner,amount,
+    type:document.getElementById('ff-type').value,
+    spec:document.getElementById('ff-spec').value,
+    bu:document.getElementById('ff-bu').value.trim(),
+    head:document.getElementById('ff-head').value.trim(),
+    manager:document.getElementById('ff-manager').value.trim(),
+    claimQ:document.getElementById('ff-claimQ').value,
+    claimY:parseInt(document.getElementById('ff-claimY').value)||2026,
+    claimId:document.getElementById('ff-claimid').value.trim(),
+    pal:document.getElementById('ff-pal').value,
+    state:document.getElementById('ff-state').value,
+  };
+  if(editId){const i=fund.findIndex(x=>x.id===editId);fund[i]={...rec,id:editId};}
+  else{rec.id=nextFundId++;fund.push(rec);}
+  save('sdg_fund',fund);
+  closeModal('fundOverlay');
+  renderFund(); updateKPIs(); updateCharts();
+  toast(editId?'Funding actualizado ✓':'Funding añadido ✓');
+}
+function deleteFund(id){
+  if(!confirm('¿Eliminar este registro de funding?')) return;
+  fund=fund.filter(x=>x.id!==id); save('sdg_fund',fund);
+  renderFund(); updateKPIs(); updateCharts();
+  toast('Registro eliminado');
+}
+
+// ── PIPE FUNDS CARDS ──────────────────────────────────────────────────────────
+function renderPF(){
+  const total=pf.reduce((s,r)=>s+(r.amount||0),0);
+  const impact=pf.reduce((s,r)=>s+Math.round((r.amount||0)*(r.win||0)/100),0);
+  document.getElementById('pfTotal').textContent='$'+total.toLocaleString();
+  document.getElementById('pfImpact').textContent='$'+impact.toLocaleString();
+  document.getElementById('pfCount').textContent=pf.length;
+  document.getElementById('pfGrid').innerHTML=pf.map(r=>{
+    const imp=Math.round((r.amount||0)*(r.win||0)/100);
+    const w=r.win||0;
+    const cls=w>=75?'win':w>=50?'nominado':w>0?'evidencias':'cancelado';
+    return `<div class="pfcard">
+      <button class="edit-btn" onclick="editPF(${r.id})" title="Editar">✏️</button>
+      <div class="pf-client">${r.client}</div>
+      <div class="pf-proj">${r.project} · <span style="color:var(--text3)">${r.partner}</span></div>
+      <div class="pbar"><div class="pfill" style="width:${w}%"></div></div>
+      <div class="pf-meta">
+        <div>
+          <div class="pf-amt">$${(r.amount||0).toLocaleString()}</div>
+          <div class="pf-sub">Impacto esperado: $${imp.toLocaleString()}</div>
+        </div>
+        <span class="pill ${cls}">${w}% WIN</span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn sm danger" onclick="deletePF(${r.id})">🗑 Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openPFModal(){
+  document.getElementById('pfEditId').value='';
+  document.getElementById('pfModalTitle').textContent='Nuevo pipe fund';
+  ['client','project','resp','notes'].forEach(f=>document.getElementById('pf-'+f).value='');
+  document.getElementById('pf-amount').value='';
+  document.getElementById('pf-win').value='50';
+  document.getElementById('pf-date').value='';
+  openModal('pfOverlay');
+}
+function editPF(id){
+  const r=pf.find(x=>x.id===id); if(!r) return;
+  document.getElementById('pfEditId').value=id;
+  document.getElementById('pfModalTitle').textContent='Editar pipe fund';
+  document.getElementById('pf-client').value=r.client;
+  document.getElementById('pf-partner').value=r.partner;
+  document.getElementById('pf-project').value=r.project;
+  document.getElementById('pf-type').value=r.type||'Partner-led';
+  document.getElementById('pf-amount').value=r.amount;
+  document.getElementById('pf-date').value=r.date||'';
+  document.getElementById('pf-win').value=r.win;
+  document.getElementById('pf-resp').value=r.resp||'';
+  document.getElementById('pf-notes').value=r.notes||'';
+  openModal('pfOverlay');
+}
+function savePF(){
+  const client=document.getElementById('pf-client').value.trim();
+  const project=document.getElementById('pf-project').value.trim();
+  const amount=parseFloat(document.getElementById('pf-amount').value)||0;
+  if(!client||!project||!amount){alert('Completa cliente, proyecto y cantidad');return;}
+  const editId=parseInt(document.getElementById('pfEditId').value)||0;
+  const rec={
+    client,project,amount,
+    partner:document.getElementById('pf-partner').value,
+    type:document.getElementById('pf-type').value,
+    date:document.getElementById('pf-date').value,
+    win:parseInt(document.getElementById('pf-win').value)||0,
+    resp:document.getElementById('pf-resp').value.trim(),
+    notes:document.getElementById('pf-notes').value.trim(),
+  };
+  if(editId){const i=pf.findIndex(x=>x.id===editId);pf[i]={...rec,id:editId};}
+  else{rec.id=nextPFId++;pf.push(rec);}
+  save('sdg_pf',pf);
+  closeModal('pfOverlay');
+  renderPF();
+  toast(editId?'Actualizado ✓':'Pipe fund añadido ✓');
+}
+function deletePF(id){
+  if(!confirm('¿Eliminar este pipe fund?')) return;
+  pf=pf.filter(x=>x.id!==id); save('sdg_pf',pf);
+  renderPF(); toast('Eliminado');
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+function updateKPIs(){
+  const total=pipe.length;
+  const wins=pipe.filter(r=>r.state==='WIN').length;
+  const inprog=pipe.filter(r=>r.state==='In Progress').length;
+  const fundTotal=fund.reduce((s,r)=>s+(r.amount||0),0);
+  const pfTotal=pf.reduce((s,r)=>s+(r.amount||0),0);
+  document.getElementById('kpis').innerHTML=`
+    <div class="metric ab"><div class="metric-label">Co-sell oportunidades</div><div class="metric-value">${total}</div><div class="metric-sub">Pipeline total</div></div>
+    <div class="metric ag"><div class="metric-label">Tasa de éxito (WIN)</div><div class="metric-value">${total?Math.round(wins/total*100):0}%</div><div class="metric-sub">${wins} ganadas</div></div>
+    <div class="metric at"><div class="metric-label">Funding reclamado</div><div class="metric-value">$${(fundTotal/1000).toFixed(0)}K</div><div class="metric-sub">USD total acumulado</div></div>
+    <div class="metric aa"><div class="metric-label">Oportunidades activas</div><div class="metric-value">${inprog}</div><div class="metric-sub">In progress</div></div>
+    <div class="metric ab"><div class="metric-label">Funding pipeline</div><div class="metric-value">$${(pfTotal/1000).toFixed(0)}K</div><div class="metric-sub">solicitado en pipe funds</div></div>
+    <div class="metric ag"><div class="metric-label">Registros funding</div><div class="metric-value">${fund.length}</div><div class="metric-sub">Professional Services</div></div>
+  `;
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+let charts={};
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function updateCharts(){
+  const isDark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)';
+  const tc=isDark?'#888780':'#888780';
+
+  // state counts
+  const states=['WIN','In Progress','LOST','Negotiate'];
+  const sCounts=states.map(s=>pipe.filter(r=>r.state===s).length);
+  destroyChart('stateChart');
+  charts.stateChart=new Chart(document.getElementById('stateChart'),{
+    type:'doughnut',
+    data:{labels:states,datasets:[{data:sCounts,backgroundColor:['#3B6D11','#185FA5','#993C1D','#854F0B'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} (${pipe.length?Math.round(c.raw/pipe.length*100):0}%)`}}}}
+  });
+  const sColors=['#3B6D11','#185FA5','#993C1D','#854F0B'];
+  document.getElementById('leg-state').innerHTML=states.map((s,i)=>`<span><span class="ld" style="background:${sColors[i]}"></span>${s} (${sCounts[i]})</span>`).join('');
+
+  // partner counts
+  const partners=['Microsoft','Databricks','Google Cloud Platform','AWS','SAP','dbt','Snowflake'];
+  const pCounts=partners.map(p=>pipe.filter(r=>r.partner===p).length).filter((_,i)=>pipe.some(r=>r.partner===partners[i]));
+  const pLabels=partners.filter(p=>pipe.some(r=>r.partner===p));
+  const pColors=['#185FA5','#E24B4A','#1D9E75','#D85A30','#888780','#BA7517','#534AB7'];
+  destroyChart('partnerChart');
+  charts.partnerChart=new Chart(document.getElementById('partnerChart'),{
+    type:'doughnut',
+    data:{labels:pLabels,datasets:[{data:pLabels.map(p=>pipe.filter(r=>r.partner===p).length),backgroundColor:pColors,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+  });
+  document.getElementById('leg-partner').innerHTML=pLabels.map((p,i)=>`<span><span class="ld" style="background:${pColors[i]}"></span>${p}</span>`).join('');
+
+  // industry bar
+  const inds=['Travel & Entertainment','FSI','Industrial & Manufacturing','Health & Pharma','Consumer Goods & Retail','Telco & Utilities','Public Sector','Wholesale distribution'];
+  const iLabels=['Travel & Ent.','FSI','Industrial','Health & Pharma','Consumer','Telco & Util.','Public','Wholesale'];
+  const iCounts=inds.map(ind=>pipe.filter(r=>r.industry===ind).length);
+  destroyChart('industryChart');
+  charts.industryChart=new Chart(document.getElementById('industryChart'),{
+    type:'bar',
+    data:{labels:iLabels,datasets:[{label:'Oportunidades',data:iCounts,backgroundColor:'#185FA5',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gc},ticks:{color:tc}},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}}}
+  });
+
+  // funding state
+  const fStates=['Cobrado','Nominado','Aceptado','Cancelado','Evidencias aportadas'];
+  const fCounts=fStates.map(s=>fund.filter(r=>r.state===s).length);
+  const fColors=['#3B6D11','#185FA5','#0F6E56','#E24B4A','#BA7517'];
+  destroyChart('fundStateChart');
+  charts.fundStateChart=new Chart(document.getElementById('fundStateChart'),{
+    type:'doughnut',
+    data:{labels:fStates,datasets:[{data:fCounts,backgroundColor:fColors,borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+  });
+  document.getElementById('leg-fstate').innerHTML=fStates.map((s,i)=>`<span><span class="ld" style="background:${fColors[i]}"></span>${s} (${fCounts[i]})</span>`).join('');
+
+  // fund by industry
+  const fiInds=['Consumer Goods & Retail','Industrial & Manufacturing','Travel & Entertainment','Health & Pharma','FSI','Public Sector','Telco & Utilities'];
+  const fiLabels=['Consumer','Industrial','Travel','Health','FSI','Public','Telco'];
+  const fiAmounts=fiInds.map(ind=>fund.filter(r=>r.industry===ind).reduce((s,r)=>s+(r.amount||0),0));
+  destroyChart('fundIndChart');
+  charts.fundIndChart=new Chart(document.getElementById('fundIndChart'),{
+    type:'bar',
+    data:{labels:fiLabels,datasets:[{label:'Fund USD',data:fiAmounts,backgroundColor:'#0F6E56',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` $${c.raw.toLocaleString()}`}}},scales:{x:{grid:{color:gc},ticks:{color:tc,callback:v=>'$'+Math.round(v/1000)+'K'}},y:{grid:{display:false},ticks:{color:tc,font:{size:11}}}}}
+  });
+}
+
+// close overlay clicking outside
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateKPIs();
+renderPipe();
+renderFund();
+renderPF();
+updateCharts();
+</script>
+</body>
+</html>
